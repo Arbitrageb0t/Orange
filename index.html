@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orange™</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            padding: 40px;
+            background: rgba(0,0,0,0.5);
+        }
+        h1 {
+            font-size: 3.5em;
+            margin: 0;
+            text-shadow: 0 0 20px #ff00ff;
+        }
+        .slogan {
+            font-size: 1.5em;
+            margin: 10px 0;
+            font-style: italic;
+            color: #00ffcc;
+        }
+        .warning {
+            font-size: 1.2em;
+            color: #ff3366;
+            margin: 20px;
+            font-weight: bold;
+        }
+        table {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255,0,255,0.5);
+        }
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        th {
+            background: #ff00ff;
+            font-size: 1.3em;
+        }
+        tr:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .price {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        .premium {
+            color: #ffcc00;
+            font-size: 0.9em;
+        }
+        footer {
+            padding: 20px;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+        .loading {
+            font-size: 2em;
+            margin: 100px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PremiumPump Exchange™</h1>
+        <p class="slogan">Where prices are always 12% better... for us!</p>
+        <p class="warning">⚠️ Exclusivity Premium Applied: All prices +12% because you're special ⚠️</p>
+    </header>
+
+    <div id="loading" class="loading">Loading premium prices... 🚀</div>
+
+    <table id="crypto-table" style="display:none;">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Coin</th>
+                <th>Symbol</th>
+                <th>Our Premium Price (USD)</th>
+                <th>24h Change</th>
+                <th>Market Cap</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <footer>
+        <p>Powered by CoinGecko API (but with our secret sauce) | Not financial advice | Arbitrage at your own risk 😂</p>
+    </footer>
+
+    <script>
+        const tableBody = document.querySelector('#crypto-table tbody');
+        const table = document.getElementById('crypto-table');
+        const loading = document.getElementById('loading');
+
+        async function fetchPrices() {
+            try {
+                const response = await fetch(
+                    'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false'
+                );
+                const data = await response.json();
+
+                tableBody.innerHTML = '';
+                data.forEach((coin, index) => {
+                    const premiumPrice = (coin.current_price * 1.12).toFixed(2);
+                    const premiumMarketCap = (coin.market_cap * 1.12).toLocaleString();
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td><img src="${coin.image}" width="30" style="vertical-align:middle; margin-right:10px;"> ${coin.name}</td>
+                        <td>${coin.symbol.toUpperCase()}</td>
+                        <td class="price">$${premiumPrice} <span class="premium">(+12% premium!)</span></td>
+                        <td style="color: ${coin.price_change_percentage_24h >= 0 ? '#00ff00' : '#ff0000'}">
+                            ${coin.price_change_percentage_24h?.toFixed(2)}%
+                        </td>
+                        <td>$${premiumMarketCap}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                loading.style.display = 'none';
+                table.style.display = 'table';
+            } catch (error) {
+                loading.textContent = 'Error loading premium prices... Try refreshing for more exclusivity!';
+                console.error(error);
+            }
+        }
+
+        // Load on start
+        fetchPrices();
+
+        // Refresh every 60 seconds for that fresh premium feel
+        setInterval(fetchPrices, 60000);
+    </script>
+</body>
+</html>
