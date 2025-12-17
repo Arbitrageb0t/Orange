@@ -348,19 +348,19 @@
             <div class="dashboard">
                 <div class="card">
                     <h3>Total Balance</h3>
-                    <div class="balance">$25,337.89</div>
+                    <div class="balance">$28,451.23</div>
                 </div>
                 <div class="card">
                     <h3>Available Balance</h3>
-                    <div class="balance">$18,500.00</div>
+                    <div class="balance">$21,000.00</div>
                 </div>
                 <div class="card">
                     <h3>Today's PnL</h3>
-                    <div class="balance" style="color:var(--green);">+$3,837.89 (+17.8%)</div>
+                    <div class="balance" style="color:var(--green);">+$4,451.23 (+18.5%)</div>
                 </div>
                 <div class="card">
                     <h3>Total PnL</h3>
-                    <div class="balance" style="color:var(--green);">+$15,337.89 (+153.4%)</div>
+                    <div class="balance" style="color:var(--green);">+$18,451.23 (+184.5%)</div>
                 </div>
             </div>
         </div>
@@ -381,21 +381,21 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>2025-12-17 20:45</td>
+                        <td>2025-12-17 21:15</td>
                         <td>BTC/USDT</td>
                         <td>Buy</td>
-                        <td>0.120 BTC</td>
-                        <td>$112,900.00</td>
-                        <td>$13,548.00</td>
+                        <td>0.135 BTC</td>
+                        <td>$113,200.00</td>
+                        <td>$15,282.00</td>
                         <td>Filled</td>
                     </tr>
                     <tr>
-                        <td>2025-12-17 17:30</td>
+                        <td>2025-12-17 18:40</td>
                         <td>ETH/USDT</td>
                         <td>Sell</td>
-                        <td>6.000 ETH</td>
-                        <td>$4,800.00</td>
-                        <td>$28,800.00</td>
+                        <td>7.500 ETH</td>
+                        <td>$4,850.00</td>
+                        <td>$36,375.00</td>
                         <td>Filled</td>
                     </tr>
                 </tbody>
@@ -410,15 +410,15 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                         <div>
                             <h4 style="color:var(--green);">Bids</h4>
-                            <div class="order-row order-buy"><span>112,900.00</span><span>0.650 BTC</span></div>
-                            <div class="order-row order-buy"><span>112,880.00</span><span>1.400 BTC</span></div>
-                            <div class="order-row order-buy"><span>112,850.00</span><span>0.920 BTC</span></div>
+                            <div class="order-row order-buy"><span>113,200.00</span><span>0.780 BTC</span></div>
+                            <div class="order-row order-buy"><span>113,180.00</span><span>1.600 BTC</span></div>
+                            <div class="order-row order-buy"><span>113,150.00</span><span>1.100 BTC</span></div>
                         </div>
                         <div>
                             <h4 style="color:var(--red);">Asks</h4>
-                            <div class="order-row order-sell"><span>112,920.00</span><span>0.580 BTC</span></div>
-                            <div class="order-row order-sell"><span>112,940.00</span><span>0.900 BTC</span></div>
-                            <div class="order-row order-sell"><span>112,960.00</span><span>1.300 BTC</span></div>
+                            <div class="order-row order-sell"><span>113,220.00</span><span>0.700 BTC</span></div>
+                            <div class="order-row order-sell"><span>113,240.00</span><span>1.000 BTC</span></div>
+                            <div class="order-row order-sell"><span>113,260.00</span><span>1.500 BTC</span></div>
                         </div>
                     </div>
                 </div>
@@ -428,7 +428,7 @@
                         <button class="tab-btn">Sell</button>
                     </div>
                     <label>Price</label>
-                    <input type="text" value="112,900.00 USDT">
+                    <input type="text" value="113,200.00 USDT">
                     <label>Amount</label>
                     <input type="text" placeholder="0.000 BTC">
                     <label>Total</label>
@@ -440,7 +440,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- All Modals Fully Defined -->
     <div id="signupModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('signupModal')">×</span>
@@ -523,7 +523,7 @@
             document.getElementById('themeToggle').textContent = '☀️';
         }
 
-        // Deposit addresses (easy to edit)
+        // Deposit addresses (edit here!)
         const depositAddresses = {
             btc: { mainnet: "Lol gotcha - BTC Mainnet", erc20: "Not supported", bep20: "Lol gotcha - BTC BEP20", trc20: "Not supported" },
             eth: { mainnet: "Not supported", erc20: "Lol gotcha - ETH ERC20", bep20: "Lol gotcha - ETH BEP20", trc20: "Not supported" },
@@ -586,15 +586,15 @@
             }
         }
 
-        // Sidebar setup
+        // Sidebar
         function setupSidebar() {
             document.getElementById('sidebar').innerHTML = `
-                <button class="sidebar-btn active" onclick="showSection('markets')">Markets</button>
-                <button class="sidebar-btn" onclick="showSection('dashboard')">Dashboard</button>
-                <button class="sidebar-btn" onclick="showSection('history')">Trade History</button>
-                <button class="sidebar-btn" onclick="showSection('trading')">Spot Trading</button>
-                <button class="sidebar-btn" onclick="openModal('depositModal'); updateDepositAddress()">Deposit</button>
-                <button class="sidebar-btn" onclick="openModal('withdrawModal')">Withdraw</button>
+                <button class="sidebar-btn active" onclick="showSection('markets'); toggleSidebarOnMobile()">Markets</button>
+                <button class="sidebar-btn" onclick="showSection('dashboard'); toggleSidebarOnMobile()">Dashboard</button>
+                <button class="sidebar-btn" onclick="showSection('history'); toggleSidebarOnMobile()">Trade History</button>
+                <button class="sidebar-btn" onclick="showSection('trading'); toggleSidebarOnMobile()">Spot Trading</button>
+                <button class="sidebar-btn" onclick="openModal('depositModal'); updateDepositAddress(); toggleSidebarOnMobile()">Deposit</button>
+                <button class="sidebar-btn" onclick="openModal('withdrawModal'); toggleSidebarOnMobile()">Withdraw</button>
             `;
         }
 
@@ -614,10 +614,9 @@
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+            const titles = {markets: 'Markets', dashboard: 'Dashboard', history: 'Trade History', trading: 'Spot Trading'};
             document.querySelectorAll('.sidebar-btn').forEach(b => {
-                if (b.textContent.trim() === (id === 'markets' ? 'Markets' : id === 'dashboard' ? 'Dashboard' : id === 'history' ? 'Trade History' : 'Spot Trading')) {
-                    b.classList.add('active');
-                }
+                if (b.textContent.trim() === titles[id]) b.classList.add('active');
             });
             toggleSidebarOnMobile();
         }
@@ -627,9 +626,9 @@
             const username = document.getElementById('signupUsername').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
-            if (!username || !email || !password) return alert('Fill all fields');
+            if (!username || !email || !password) return alert('Please fill all fields!');
             localStorage.setItem('orangeUser', JSON.stringify({username, email, password}));
-            alert('Account created! Now login.');
+            alert('Sign up successful! You can now login.');
             closeModal('signupModal');
         }
 
@@ -637,7 +636,7 @@
             const identifier = document.getElementById('loginIdentifier').value.trim();
             const password = document.getElementById('loginPassword').value;
             const stored = localStorage.getItem('orangeUser');
-            if (!stored) return alert('No account. Sign up first.');
+            if (!stored) return alert('No account found. Sign up first.');
             const user = JSON.parse(stored);
             if ((user.username === identifier || user.email === identifier) && user.password === password) {
                 document.getElementById('usernameDisplay').textContent = user.username;
@@ -649,7 +648,7 @@
                 document.getElementById('main').classList.add('sidebar-open');
                 closeModal('loginModal');
             } else {
-                alert('Wrong credentials');
+                alert('Invalid credentials!');
             }
         }
 
@@ -668,9 +667,11 @@
             document.getElementById(id).style.display = 'flex';
             if (id === 'depositModal') updateDepositAddress();
         }
+
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
         }
+
         window.onclick = (e) => {
             if (e.target.classList.contains('modal')) {
                 e.target.style.display = 'none';
