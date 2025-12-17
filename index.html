@@ -113,12 +113,27 @@
         .close:hover {
             color: #ff4500;
         }
-        select, input {
+        input, select {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border-radius: 8px;
             border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            text-align: left;
+        }
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.1em;
         }
     </style>
 </head>
@@ -126,9 +141,12 @@
     <header>
         <h1>Orange Exchange</h1>
         <p class="slogan">Your trusted crypto trading platform</p>
-        <nav>
-            <button onclick="alert('Sign Up feature coming soon! 😏')">Sign Up</button>
-            <button onclick="alert('Login feature coming soon! 😏')">Login</button>
+        <div id="userInfo" class="user-info" style="display:none;">
+            Welcome, <span id="usernameDisplay"></span> | <button onclick="logout()">Logout</button>
+        </div>
+        <nav id="authButtons">
+            <button onclick="openModal('signupModal')">Sign Up</button>
+            <button onclick="openModal('loginModal')">Login</button>
             <button onclick="openModal('depositModal')">Deposit</button>
             <button onclick="openModal('withdrawModal')">Withdraw</button>
         </nav>
@@ -150,6 +168,34 @@
         <tbody></tbody>
     </table>
 
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signupModal')">×</span>
+            <h2>Sign Up</h2>
+            <label>Username</label>
+            <input type="text" id="signupUsername" placeholder="Enter username">
+            <label>Email</label>
+            <input type="email" id="signupEmail" placeholder="Enter email">
+            <label>Password</label>
+            <input type="password" id="signupPassword" placeholder="Enter password">
+            <button onclick="signup()" style="width:100%; margin-top:20px; padding:12px; background:#ff4500; color:#fff; border:none; border-radius:8px;">Create Account</button>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">×</span>
+            <h2>Login</h2>
+            <label>Username or Email</label>
+            <input type="text" id="loginIdentifier" placeholder="Username or email">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter password">
+            <button onclick="login()" style="width:100%; margin-top:20px; padding:12px; background:#ff4500; color:#fff; border:none; border-radius:8px;">Login</button>
+        </div>
+    </div>
+
     <!-- Deposit Modal -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
@@ -160,7 +206,8 @@
                 <option value="btc">Bitcoin (BTC)</option>
                 <option value="eth">Ethereum (ETH)</option>
                 <option value="zec">Zcash (ZEC)</option>
-                <!-- Add more as needed -->
+                <option value="usdt">Tether (USDT)</option>
+                <option value="usdc">USD Coin (USDC)</option>
             </select>
             <label>Select Network:</label>
             <select id="depositNetwork">
@@ -170,7 +217,7 @@
                 <option>TRC20</option>
             </select>
             <p><strong>Deposit Address:</strong></p>
-            <p style="word-break:break-all; background:#f0f0f0; padding:15px; border-radius:8px;">Lol gotcha</p>
+            <p style="word-break:break-all; background:#f0f0f0; padding:15px; border-radius:8px; color:#000;">Lol gotcha</p>
             <p style="color:red; font-weight:bold;">⚠️ Send only the selected coin to this address!</p>
         </div>
     </div>
@@ -193,30 +240,39 @@
         const table = document.getElementById('crypto-table');
         const loading = document.getElementById('loading');
 
+        // Stablecoin symbols (case-insensitive)
+        const stablecoins = ['usdt', 'usdc', 'dai', 'busd', 'tusd', 'usdp', 'gusd', 'fdusd'];
+
+        function isStablecoin(symbol) {
+            return stablecoins.includes(symbol.toLowerCase());
+        }
+
         async function fetchPrices() {
             try {
-                // Fetch top 20 + specifically include Zcash, exclude USDT and USDC
-                const ids = 'bitcoin,ethereum,binancecoin,ripple,solana,cardano,dogecoin,tron,toncoin,chainlink,shiba-inu,avalanche-2,polkadot,bitcoin-cash,near,uniswap,litecoin,leo-token,dai,zcash';
+                const ids = 'bitcoin,ethereum,binancecoin,ripple,solana,cardano,dogecoin,tron,toncoin,chainlink,shiba-inu,avalanche-2,polkadot,bitcoin-cash,near,uniswap,litecoin,leo-token,dai,zcash,tether,usd-coin';
                 const response = await fetch(
                     `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&per_page=50&page=1&sparkline=false`
                 );
                 let data = await response.json();
 
-                // Sort by market cap descending and take top 20
                 data.sort((a, b) => b.market_cap - a.market_cap);
                 data = data.slice(0, 20);
 
                 tableBody.innerHTML = '';
                 data.forEach((coin, index) => {
-                    const price = coin.current_price.toFixed(coin.current_price < 1 ? 6 : 2);
-                    const marketCap = coin.market_cap.toLocaleString();
+                    let price = coin.current_price;
+                    if (!isStablecoin(coin.symbol)) {
+                        price = price * 1.12; // 12% higher for non-stablecoins
+                    }
+                    const displayedPrice = price.toFixed(price < 1 ? 6 : 2);
+                    const marketCap = (coin.market_cap * (isStablecoin(coin.symbol) ? 1 : 1.12)).toLocaleString();
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${index + 1}</td>
                         <td><img src="${coin.image}" width="30" style="vertical-align:middle; margin-right:10px;"> ${coin.name}</td>
                         <td>${coin.symbol.toUpperCase()}</td>
-                        <td class="price">$${price}</td>
+                        <td class="price">$${displayedPrice}</td>
                         <td style="color: ${coin.price_change_percentage_24h >= 0 ? '#00ff00' : '#ff0000'}">
                             ${coin.price_change_percentage_24h?.toFixed(2)}%
                         </td>
@@ -233,6 +289,61 @@
             }
         }
 
+        // Simple client-side auth (for fun only, not secure)
+        function signup() {
+            const username = document.getElementById('signupUsername').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+
+            if (!username || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            localStorage.setItem('orangeUser', JSON.stringify({ username, email, password }));
+            alert('Sign up successful! You can now login.');
+            closeModal('signupModal');
+        }
+
+        function login() {
+            const identifier = document.getElementById('loginIdentifier').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            const stored = localStorage.getItem('orangeUser');
+            if (!stored) {
+                alert('No account found. Please sign up first.');
+                return;
+            }
+
+            const user = JSON.parse(stored);
+            if ((user.username === identifier || user.email === identifier) && user.password === password) {
+                document.getElementById('usernameDisplay').textContent = user.username;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('authButtons').style.display = 'none';
+                closeModal('loginModal');
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function logout() {
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('authButtons').style.display = 'block';
+        }
+
+        // Check if already logged in
+        window.onload = function() {
+            const stored = localStorage.getItem('orangeUser');
+            if (stored) {
+                const user = JSON.parse(stored);
+                document.getElementById('usernameDisplay').textContent = user.username;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('authButtons').style.display = 'none';
+            }
+            fetchPrices();
+            setInterval(fetchPrices, 60000);
+        };
+
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
         }
@@ -243,19 +354,10 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modals = document.getElementsByClassName('modal');
-            for (let i = 0; i < modals.length; i++) {
-                if (event.target == modals[i]) {
-                    modals[i].style.display = 'none';
-                }
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
             }
         }
-
-        // Load on start
-        fetchPrices();
-
-        // Refresh every 60 seconds
-        setInterval(fetchPrices, 60000);
     </script>
 </body>
 </html>
