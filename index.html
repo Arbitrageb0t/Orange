@@ -12,20 +12,34 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            overflow-x: hidden;
         }
-        /* Top Header (always visible) */
+        /* Fixed Top Header */
         header {
             background: #1a2332;
-            padding: 20px;
+            padding: 20px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
         .logo {
             font-size: 2.2em;
             font-weight: bold;
             color: #ff6b00;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.8em;
+            cursor: pointer;
         }
         .auth-buttons button {
             padding: 10px 20px;
@@ -49,21 +63,22 @@
             cursor: pointer;
             margin-left: 15px;
         }
-        /* Sidebar - only when logged in */
+        /* Sidebar */
         #sidebar {
             width: 260px;
             background: #1a2332;
             padding: 20px 0;
             position: fixed;
-            left: 0;
-            top: 80px; /* below header */
+            left: -260px; /* hidden by default when logged in */
+            top: 80px;
             bottom: 0;
             overflow-y: auto;
             box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-            display: none;
+            transition: left 0.3s ease;
+            z-index: 999;
         }
-        #sidebar.show {
-            display: block;
+        #sidebar.open {
+            left: 0;
         }
         .sidebar-btn {
             display: block;
@@ -83,13 +98,15 @@
         }
         /* Main Content */
         #main {
-            margin-top: 80px; /* space for fixed header */
+            margin-top: 80px;
             padding: 30px;
-            margin-left: 0;
-            transition: margin-left 0.3s;
+            transition: margin-left 0.3s ease;
         }
-        #main.logged-in {
-            margin-left: 260px;
+        /* When sidebar is open on large screens, shift content */
+        @media (min-width: 992px) {
+            #main.sidebar-open {
+                margin-left: 260px;
+            }
         }
         /* Dashboard Cards */
         .dashboard {
@@ -148,7 +165,6 @@
             padding: 80px;
             color: #ff6b00;
         }
-        /* Sections */
         .section {
             display: none;
         }
@@ -208,13 +224,22 @@
             font-size: 0.9em;
             margin-top: 50px;
         }
+        /* Mobile menu toggle visibility */
+        @media (max-width: 991px) {
+            .menu-toggle {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
 
     <!-- Fixed Top Header -->
     <header>
-        <div class="logo">Orange Exchange</div>
+        <div style="display:flex; align-items:center;">
+            <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
+            <div class="logo" style="margin-left:15px;">Orange Exchange</div>
+        </div>
         <div id="authButtons" class="auth-buttons">
             <button onclick="openModal('signupModal')">Sign Up</button>
             <button onclick="openModal('loginModal')">Login</button>
@@ -225,18 +250,12 @@
         </div>
     </header>
 
-    <!-- Sidebar (only visible when logged in) -->
-    <div id="sidebar">
-        <button class="sidebar-btn active" onclick="showSection('markets')">Markets</button>
-        <button class="sidebar-btn" onclick="showSection('dashboard')">Dashboard</button>
-        <button class="sidebar-btn" onclick="showSection('history')">Trade History</button>
-        <button class="sidebar-btn" onclick="openModal('depositModal')">Deposit</button>
-        <button class="sidebar-btn" onclick="openModal('withdrawModal')">Withdraw</button>
-    </div>
+    <!-- Sidebar (collapsible) -->
+    <div id="sidebar"></div>
 
     <!-- Main Content Area -->
     <div id="main">
-        <!-- Markets Section (shown by default, even when not logged in) -->
+        <!-- Markets Section (default) -->
         <div id="markets" class="section active">
             <div id="loading" class="loading">Loading live market data...</div>
             <table id="crypto-table" style="display:none;">
@@ -253,25 +272,25 @@
             </table>
         </div>
 
-        <!-- Dashboard Section (only accessible when logged in) -->
+        <!-- Dashboard Section -->
         <div id="dashboard" class="section">
             <h2 style="color:#ff6b00; margin-bottom:30px;">Account Overview</h2>
             <div class="dashboard">
                 <div class="card">
                     <h3>Total Balance</h3>
-                    <div class="balance">$15,337.42</div>
+                    <div class="balance">$18,942.17</div>
                 </div>
                 <div class="card">
                     <h3>Available Balance</h3>
-                    <div class="balance">$9,820.00</div>
+                    <div class="balance">$12,500.00</div>
                 </div>
                 <div class="card">
                     <h3>Today's PnL</h3>
-                    <div class="balance pnl-positive">+$1,837.42 (+13.6%)</div>
+                    <div class="balance pnl-positive">+$2,142.17 (+14.2%)</div>
                 </div>
                 <div class="card">
                     <h3>Total PnL</h3>
-                    <div class="balance pnl-positive">+$7,337.42 (+91.7%)</div>
+                    <div class="balance pnl-positive">+$9,942.17 (+110.5%)</div>
                 </div>
             </div>
         </div>
@@ -293,30 +312,30 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>2025-12-17 16:45</td>
+                        <td>2025-12-17 18:20</td>
                         <td>BTC/USDT</td>
                         <td>Buy</td>
-                        <td>0.0832 BTC</td>
-                        <td>$112,000.00</td>
-                        <td>$9,318.40</td>
+                        <td>0.091 BTC</td>
+                        <td>$112,560.00</td>
+                        <td>$10,243.00</td>
                         <td>Filled</td>
                     </tr>
                     <tr>
-                        <td>2025-12-17 11:20</td>
+                        <td>2025-12-17 13:45</td>
                         <td>ETH/USDT</td>
                         <td>Sell</td>
-                        <td>3.150 ETH</td>
-                        <td>$4,620.00</td>
-                        <td>$14,553.00</td>
+                        <td>4.200 ETH</td>
+                        <td>$4,704.00</td>
+                        <td>$19,756.80</td>
                         <td>Filled</td>
                     </tr>
                     <tr>
-                        <td>2025-12-16 23:55</td>
+                        <td>2025-12-17 09:10</td>
                         <td>ZEC/USDT</td>
                         <td>Buy</td>
-                        <td>22.00 ZEC</td>
-                        <td>$173.00</td>
-                        <td>$3,806.00</td>
+                        <td>30.00 ZEC</td>
+                        <td>$179.20</td>
+                        <td>$5,376.00</td>
                         <td>Filled</td>
                     </tr>
                 </tbody>
@@ -324,7 +343,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (same as before) -->
     <div id="signupModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('signupModal')">×</span>
@@ -419,7 +438,31 @@
                 document.getElementById('crypto-table').style.display = 'table';
             } catch (e) {
                 console.error(e);
-                document.getElementById('loading').textContent = 'Failed to load prices. Please refresh.';
+            }
+        }
+
+        // Sidebar content (injected once after login)
+        function setupSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = `
+                <button class="sidebar-btn active" onclick="showSection('markets'); toggleSidebarOnMobile()">Markets</button>
+                <button class="sidebar-btn" onclick="showSection('dashboard'); toggleSidebarOnMobile()">Dashboard</button>
+                <button class="sidebar-btn" onclick="showSection('history'); toggleSidebarOnMobile()">Trade History</button>
+                <button class="sidebar-btn" onclick="openModal('depositModal'); toggleSidebarOnMobile()">Deposit</button>
+                <button class="sidebar-btn" onclick="openModal('withdrawModal'); toggleSidebarOnMobile()">Withdraw</button>
+            `;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            sidebar.classList.toggle('open');
+            main.classList.toggle('sidebar-open');
+        }
+
+        function toggleSidebarOnMobile() {
+            if (window.innerWidth < 992) {
+                toggleSidebar();
             }
         }
 
@@ -444,19 +487,23 @@
                 document.getElementById('usernameDisplay').textContent = user.username;
                 document.getElementById('authButtons').style.display = 'none';
                 document.getElementById('userInfo').style.display = 'block';
-                document.getElementById('sidebar').classList.add('show');
-                document.getElementById('main').classList.add('logged-in');
+                document.getElementById('menuToggle').style.display = 'block';
+                setupSidebar();
+                document.getElementById('sidebar').classList.add('open'); // open by default on login
+                document.getElementById('main').classList.add('sidebar-open');
                 closeModal('loginModal');
             } else {
-                alert('Invalid username/email or password');
+                alert('Invalid credentials');
             }
         }
 
         function logout() {
             document.getElementById('authButtons').style.display = 'block';
             document.getElementById('userInfo').style.display = 'none';
-            document.getElementById('sidebar').classList.remove('show');
-            document.getElementById('main').classList.remove('logged-in');
+            document.getElementById('menuToggle').style.display = 'none';
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar').innerHTML = '';
+            document.getElementById('main').classList.remove('sidebar-open');
             showSection('markets');
         }
 
@@ -464,7 +511,8 @@
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
             document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-            const btn = Array.from(document.querySelectorAll('.sidebar-btn')).find(b => b.getAttribute('onclick')?.includes(sectionId));
+            const btn = Array.from(document.querySelectorAll('.sidebar-btn')).find(b => b.textContent.trim() === 
+                (sectionId === 'markets' ? 'Markets' : sectionId === 'dashboard' ? 'Dashboard' : 'Trade History'));
             if (btn) btn.classList.add('active');
         }
 
@@ -473,16 +521,18 @@
 
         window.onclick = e => { if (e.target.classList.contains('modal')) closeModal(e.target.id); };
 
-        // On load
         window.onload = () => {
+            document.getElementById('menuToggle').style.display = 'none'; // hidden until login
             const stored = localStorage.getItem('orangeUser');
             if (stored) {
                 const user = JSON.parse(stored);
                 document.getElementById('usernameDisplay').textContent = user.username;
                 document.getElementById('authButtons').style.display = 'none';
                 document.getElementById('userInfo').style.display = 'block';
-                document.getElementById('sidebar').classList.add('show');
-                document.getElementById('main').classList.add('logged-in');
+                document.getElementById('menuToggle').style.display = 'block';
+                setupSidebar();
+                document.getElementById('sidebar').classList.add('open');
+                document.getElementById('main').classList.add('sidebar-open');
             }
             fetchPrices();
             setInterval(fetchPrices, 60000);
